@@ -1,0 +1,56 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.x                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      createPatchDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+pointSync false;
+patches
+(
+    {
+        // Name of new patch
+        name AMIfront;
+        // Type of new patch
+        patchInfo
+        {
+           type cyclicAMI;
+           neighbourPatch AMIback;
+           transform translational;
+	   separationVector (0 -0.011879 0);
+           matchTolerance 0.001;
+        }
+        // How to construct: either from 'patches' or 'set'
+        constructFrom patches;
+        // If constructFrom = patches : names of patches. Wildcards allowed.
+        patches (PatchFront);
+    }
+ 
+    {
+        // Name of new patch
+        name AMIback;
+        // Type of new patch
+        patchInfo
+        {
+           type cyclicAMI;
+           neighbourPatch AMIfront;
+           transform translational;
+	   separationVector (0 0.011879 0);
+           matchTolerance 0.001;
+        }
+        // How to construct: either from 'patches' or 'set'
+        constructFrom patches;
+        // If constructFrom = patches : names of patches. Wildcards allowed.
+        patches (PatchBack);
+    }
+);  

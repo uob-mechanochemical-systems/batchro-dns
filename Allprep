@@ -1,0 +1,62 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # Run from this directory
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+# copy membrane support surface from geometry directory
+# cp $FOAM_RUN/geometry/membrane/LD4membrane.stl constant/triSurface/
+runApplication surfaceFeatureExtract
+
+# Create the Grid
+runApplication blockMesh
+cp system/decomposeParDict.Grid system/decomposeParDict
+runApplication decomposePar
+runParallel snappyHexMesh -overwrite
+
+# Create periodic patches (cyclicAMI)
+# runParallel createPatch -overwrite
+
+#- For non-parallel running
+# cp -r 0.orig 0 > /dev/null 2>&1
+
+#- For parallel running
+ls -d processor* | xargs -I {} rm -rf ./{}/0
+ls -d processor* | xargs -I {} cp -r 0.orig ./{}/0
+
+# Reconstruct the Grid
+runApplication reconstructParMesh -constant
+cp -r 0.orig 0
+
+# Create periodic patches (cyclicAMI)
+runApplication createPatch -overwrite
+
+# Prepare for another decompose with singleProcessorFaceSets for cyclicAMI patches
+rm -rf log.decomposePar processor*
+
+# Create the faceSet containing periodic boundaries
+runApplication topoSet
+
+cp system/decomposeParDict.AMI system/decomposeParDict
+runApplication decomposePar
+
+#- For parallel running
+ls -d processor* | xargs -I {} rm -rf ./{}/0
+ls -d processor* | xargs -I {} cp -r 0.orig ./{}/0
+
+# renumber mesh for a more diagonal form for the "A.x=B" system 
+runParallel renumberMesh -overwrite
+
+# Summary of patches and boundary conditions
+runParallel patchSummary
+
+# check the final mesh 
+runParallel checkMesh
+
+# runParallel potentialFoam
+# runParallel $(getApplication)
+
+# runApplication reconstructParMesh -constant
+# runApplication reconstructPar -latestTime
+
+#------------------------------------------------------------------------------

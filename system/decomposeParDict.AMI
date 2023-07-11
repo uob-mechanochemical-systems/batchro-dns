@@ -1,0 +1,44 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.x                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      decomposeParDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+singleProcessorFaceSets ((AMIfaces -1)); // for cyclicAMI patches
+//preservePatches (AMIfront AMIback); // for cyclic patches
+
+numberOfSubdomains 128;
+
+method          scotch;
+
+simpleCoeffs
+{
+    n               (4 1 1);
+    delta           0.001;
+}
+
+hierarchicalCoeffs
+{
+    n               (4 2 1);
+    delta           0.001;
+    order           xyz;
+}
+
+manualCoeffs
+{
+    dataFile        "cellDecomposition";
+}
+
+
+// ************************************************************************* //
